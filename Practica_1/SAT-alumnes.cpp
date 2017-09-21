@@ -16,6 +16,8 @@ vector<int> modelStack;
 uint indexOfNextLitToPropagate;
 uint decisionLevel;
 
+vector<vector<int> > pos_lit_apparitions;
+vector<vector<int> > neg_lit_apparitions;
 
 //--------------------------------------- COSES QUE NO CAL TOCAR ----------------------------------------------------------------------
 void readClauses( ){
@@ -24,16 +26,18 @@ void readClauses( ){
   while (c == 'c') {
     while (c != '\n') c = cin.get();
     c = cin.get();
-  }  
+  }
   // Read "cnf numVars numClauses"
   string aux;
   cin >> aux >> numVars >> numClauses;
-  clauses.resize(numClauses);  
+  clauses.resize(numClauses);
   // Read clauses
   for (uint i = 0; i < numClauses; ++i) {
     int lit;
     while (cin >> lit and lit != 0) clauses[i].push_back(lit);
-  }    
+    if (lit > 0) pos_lit_apparitions[lit].push_back(i);
+    else neg_lit_apparitions[-lit].push_back(i);
+  }
 }
 
 
@@ -50,7 +54,7 @@ int currentValueInModel(int lit){
 void setLiteralToTrue(int lit){
   modelStack.push_back(lit);
   if (lit > 0) model[lit] = TRUE;
-  else model[-lit] = FALSE;		
+  else model[-lit] = FALSE;
 }
 
 void checkmodel(){
@@ -64,7 +68,7 @@ void checkmodel(){
       cout << endl;
       exit(1);
     }
-  }  
+  }
 }
 
 
@@ -89,27 +93,61 @@ void backtrack(){
 
 
 
-//El segon dels punts a canviar. Actualment es mira TOT després de cada decisió, pero 
-//en realitat només cal mirar les clàusules a on hi influeix el valor sobre el que hem   
+//El segon dels punts a canviar. Actualment es mira TOT després de cada decisió, pero
+//en realitat només cal mirar les clàusules a on hi influeix el valor sobre el que hem
 //decidit
 bool propagateGivesConflict() {
   while ( indexOfNextLitToPropagate < modelStack.size() ) {
     ++indexOfNextLitToPropagate;
-    for (uint i = 0; i < numClauses; ++i) {
+    /*for (uint i = 0; i < numClauses; ++i) {
       bool someLitTrue = false;
       int numUndefs = 0;
       int lastLitUndef = 0;
       for (uint k = 0; not someLitTrue and k < clauses[i].size(); ++k){
         int val = currentValueInModel(clauses[i][k]);
         if (val == TRUE) someLitTrue = true;
-        else if (val == UNDEF){ 
-            ++numUndefs; 
+        else if (val == UNDEF){
+            ++numUndefs;
             lastLitUndef = clauses[i][k]; }
-            
+
       }
       if (not someLitTrue and numUndefs == 0) return true; // conflict! all lits false
-      else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);	
-    }    
+      else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
+    }*/
+    if (modelStack[indexOfNextLitToPropagate] < 0) {
+        for (uint i = 0; i < pos_lit_apparitions[modelStack[indexOfNextLitToPropagate]].size(); ++i) {
+          bool someLitTrue = false;
+          int numUndefs = 0;
+          int lastLitUndef = 0;
+          for (uint k = 0; not someLitTrue and k < clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]].size(); ++k){
+            int val = currentValueInModel(clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]][k]);
+            if (val == TRUE) someLitTrue = true;
+            else if (val == UNDEF){
+                ++numUndefs;
+                lastLitUndef = clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]][k]; }
+
+          }
+          if (not someLitTrue and numUndefs == 0) return true; // conflict! all lits false
+          else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
+        }
+     }
+     else {
+         for (uint i = 0; i < neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ].size(); ++i) {
+           bool someLitTrue = false;
+           int numUndefs = 0;
+           int lastLitUndef = 0;
+           for (uint k = 0; not someLitTrue and k < clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]].size(); ++k){
+             int val = currentValueInModel(clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]][k]);
+             if (val == TRUE) someLitTrue = true;
+             else if (val == UNDEF){
+                 ++numUndefs;
+                 lastLitUndef = clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]][k]; }
+
+           }
+           if (not someLitTrue and numUndefs == 0) return true; // conflict! all lits false
+           else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
+         }
+     }
   }
   return false;
 }
@@ -121,48 +159,48 @@ bool propagateGivesConflict() {
 // Heuristic for finding the next decision literal:
 int getNextDecisionLiteral(){
   for (uint i = 1; i <= numVars; ++i) // stupid heuristic:
-    if (model[i] == UNDEF) return i;  // returns first UNDEF var, positively 
+    if (model[i] == UNDEF) return i;  // returns first UNDEF var, positively
   return 0; // returns 0 when all literals are defined
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
 
 
-int main(){ 
-  //Llegeix el numVar, numClausules i les Clausules  
+int main(){
+  //Llegeix el numVar, numClausules i les Clausules
   readClauses();
   //Adapta el tamany del model al del número de variables, i l'inicialitza a -1
   model.resize(numVars+1,UNDEF);
   //Index del següent valor sobre el que farem la propagació
-  indexOfNextLitToPropagate = 0;  
-  //Enter que indica quantes decisions hem pres fins ara  
+  indexOfNextLitToPropagate = 0;
+  //Enter que indica quantes decisions hem pres fins ara
   decisionLevel = 0;
-  
+
   // Comprobació inicial de les clàusules amb un únic paràmetre. Si alguna fos falsa, la preposició sería directament insatisfactible
   for (uint i = 0; i < numClauses; ++i)
     //Agafem només les clausules amb un únic element
     if (clauses[i].size() == 1) {
-      //Agafem l'element  
+      //Agafem l'element
       int lit = clauses[i][0];
       //Comprobem el seu valor al model
       int val = currentValueInModel(lit);
       //Si el valor es fals, la proposició és directament insatisfactible
       if (val == FALSE) {
-          cout << "UNSATISFIABLE" << endl; 
+          cout << "UNSATISFIABLE" << endl;
           return 10;
     }
       //Si el valor es indefinit, el posem a true.
       else if (val == UNDEF) setLiteralToTrue(lit);
     }
-  
+
   //Nucli del SAT-Solver. Itera fins trobar que la proposició és satisfactible o no.
   while (true) {
     //Aquesta funció fa les propagacions adient per la decisió anterior, si en alguna d'aquestes propagacions troba un conflicte, retorna true (sino retorna false)
     while ( propagateGivesConflict() ) {
-      //Si hi ha conflictes i no hem pres cap decisió, vol dir que el problema es insatisfactible  
-      if ( decisionLevel == 0) { 
-          cout << "UNSATISFIABLE" << endl; 
-          return 10; 
-          
+      //Si hi ha conflictes i no hem pres cap decisió, vol dir que el problema es insatisfactible
+      if ( decisionLevel == 0) {
+          cout << "UNSATISFIABLE" << endl;
+          return 10;
+
     }
       //Si hi ha decisions preses amb anterioritat, desfem la última que haguem fet
       backtrack();
@@ -170,13 +208,13 @@ int main(){
     //Agafem el següent valor sobre el que prendrem una decisió
     int decisionLit = getNextDecisionLiteral();
     //Si el valor es 0, vol dir que no queden valors sobre els que prendre decisions, ergo ja haurem trobat un model que podria ser vàlid
-    if (decisionLit == 0) { 
+    if (decisionLit == 0) {
         //Fem una comprobació de que el model sigui vàlid. Si no ho és ho indicarem per pantalla i s'acabara la execució del programa amb error
-        checkmodel(); 
+        checkmodel();
         //Si no s'ha acabat la execució del programa, voldrà dir que el programa és satisfactible
-        cout << "SATISFIABLE" << endl; 
-        return 20; 
-        
+        cout << "SATISFIABLE" << endl;
+        return 20;
+
     }
     //És fa push d'un 0, per indicar que ens trobem a un nou nivell de decisió (són "separadors")
     modelStack.push_back(0);
@@ -187,4 +225,4 @@ int main(){
     //Afegim el següent literal sobre el que prendrem la decisió a la pila
     setLiteralToTrue(decisionLit);    // now push decisionLit on top of the mark
   }
-}  
+}

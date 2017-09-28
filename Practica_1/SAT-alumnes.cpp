@@ -18,6 +18,7 @@ uint decisionLevel;
 
 vector<vector<int> > pos_lit_apparitions;
 vector<vector<int> > neg_lit_apparitions;
+vector<int> lit_score;
 
 //--------------------------------------- COSES QUE NO CAL TOCAR ----------------------------------------------------------------------
 void readClauses( ){
@@ -31,12 +32,23 @@ void readClauses( ){
   string aux;
   cin >> aux >> numVars >> numClauses;
   clauses.resize(numClauses);
+  pos_lit_apparitions.resize(numVars + 1);
+  neg_lit_apparitions.resize(numVars + 1);
+  lit_score.resize(numVars + 1);
   // Read clauses
   for (uint i = 0; i < numClauses; ++i) {
     int lit;
-    while (cin >> lit and lit != 0) clauses[i].push_back(lit);
-    if (lit > 0) pos_lit_apparitions[lit].push_back(i);
-    else neg_lit_apparitions[-lit].push_back(i);
+    while (cin >> lit and lit != 0) {
+      clauses[i].push_back(lit);
+      if (lit > 0) {
+        pos_lit_apparitions[lit].push_back(i);
+        ++lit_score[lit];
+      }
+      else {
+        neg_lit_apparitions[-lit].push_back(i);
+        ++lit_score[-lit];
+      }
+    }
   }
 }
 
@@ -97,6 +109,7 @@ void backtrack(){
 //en realitat només cal mirar les clàusules a on hi influeix el valor sobre el que hem
 //decidit
 bool propagateGivesConflict() {
+  cout << "propagateGivesConflict entered" << endl;
   while ( indexOfNextLitToPropagate < modelStack.size() ) {
     ++indexOfNextLitToPropagate;
     /*for (uint i = 0; i < numClauses; ++i) {
@@ -127,7 +140,11 @@ bool propagateGivesConflict() {
                 lastLitUndef = clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]][k]; }
 
           }
-          if (not someLitTrue and numUndefs == 0) return true; // conflict! all lits false
+          if (not someLitTrue and numUndefs == 0) {
+            lit_score[-modelStack[indexOfNextLitToPropagate]] += 3;
+            cout << "propagateGivesConflict exited" << endl;
+            return true; // conflict! all lits false
+          }
           else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
         }
      }
@@ -144,11 +161,16 @@ bool propagateGivesConflict() {
                  lastLitUndef = clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]][k]; }
 
            }
-           if (not someLitTrue and numUndefs == 0) return true; // conflict! all lits false
+           if (not someLitTrue and numUndefs == 0) {
+             lit_score[modelStack[indexOfNextLitToPropagate]] += 3;
+             cout << "propagateGivesConflict exited" << endl;
+             return true; // conflict! all lits false
+           }
            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
          }
      }
   }
+  cout << "propagateGivesConflict exited" << endl;
   return false;
 }
 
@@ -158,9 +180,17 @@ bool propagateGivesConflict() {
 //Primera cosa a canviar, actualment agafa el primer literal que troba i no ha estat usat abans
 // Heuristic for finding the next decision literal:
 int getNextDecisionLiteral(){
-  for (uint i = 1; i <= numVars; ++i) // stupid heuristic:
-    if (model[i] == UNDEF) return i;  // returns first UNDEF var, positively
-  return 0; // returns 0 when all literals are defined
+  cout << "getNextDecisionLiteral entered" << endl;
+  int aux_score = -1;
+  int aux_lit = 0;
+  for (uint i = 1; i <= numVars; ++i) {
+    if (lit_score[i] > aux_score && model[i] == UNDEF) {
+      aux_score = lit_score[i];
+      aux_lit = i;
+    }
+  }
+  cout << "getNextDecisionLiteral exited" << endl;
+  return aux_lit; // returns 0 when all literals are defined
 }
 //-------------------------------------------------------------------------------------------------------------------------------------
 

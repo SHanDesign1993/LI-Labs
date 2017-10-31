@@ -20,7 +20,7 @@ vector<vector<int> > pos_lit_apparitions;
 vector<vector<int> > neg_lit_apparitions;
 vector<int> lit_score;
 
-//--------------------------------------- COSES QUE NO CAL TOCAR ----------------------------------------------------------------------
+//-------------------------------- COSES A TOCAR -------------------------------
 void readClauses( ){
   // Skip comments
   char c = cin.get();
@@ -52,8 +52,9 @@ void readClauses( ){
   }
 }
 
+//------------------------------------------------------------------------------
 
-
+//--------------------------------------- COSES QUE NO CAL TOCAR ---------------
 int currentValueInModel(int lit){
   if (lit >= 0) return model[lit];
   else {

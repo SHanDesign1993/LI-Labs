@@ -109,86 +109,52 @@ void backtrack(){
 //El segon dels punts a canviar. Actualment es mira TOT després de cada decisió, pero
 //en realitat només cal mirar les clàusules a on hi influeix el valor sobre el que hem
 //decidit
-bool propagateGivesConflict() {
-  cout << "propagateGivesConflict entered" << endl;
-  /*int i = 0;
-  while ( i < modelStack.size() ) {
-    cout << modelStack[i] << " " << endl;
-    ++i;
-  }*/
-
+bool propagateGivesConflict ( ) {
   while ( indexOfNextLitToPropagate < modelStack.size() ) {
-    ++indexOfNextLitToPropagate;
-    //cout << "indexOfNextLitToPropagate: " << indexOfNextLitToPropagate << endl;
-    /*for (uint i = 0; i < numClauses; ++i) {
-      bool someLitTrue = false;
-      int numUndefs = 0;
-      int lastLitUndef = 0;
-      for (uint k = 0; not someLitTrue and k < clauses[i].size(); ++k){
-        int val = currentValueInModel(clauses[i][k]);
-        if (val == TRUE) someLitTrue = true;
-        else if (val == UNDEF){
-            ++numUndefs;
-            lastLitUndef = clauses[i][k]; }
-      }
-      if (not someLitTrue and numUndefs == 0) {
-        return true; // conflict! all lits false
-      }
-      else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
-    }*/
-    if (modelStack[indexOfNextLitToPropagate] < 0) {
-        cout << "Negative literal: " << modelStack[indexOfNextLitToPropagate] << endl;
-        for (uint i = 0; i < pos_lit_apparitions[modelStack[indexOfNextLitToPropagate]].size(); ++i) {
-          cout << "Travelling across apparitions" << endl;
-          bool someLitTrue = false;
-          int numUndefs = 0;
-          int lastLitUndef = 0;
-          for (uint k = 0; not someLitTrue and k < clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]].size(); ++k){
-            cout << "Travelling through a clause" << endl;
-            int val = currentValueInModel(clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]][k]);
-            if (val == TRUE) someLitTrue = true;
-            else if (val == UNDEF){
-                ++numUndefs;
-                lastLitUndef = clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]][k]; }
-
-          }
-          if (not someLitTrue and numUndefs == 0) {
-            lit_score[-modelStack[indexOfNextLitToPropagate]] += 3;
-            cout << "propagateGivesConflict exited" << endl;
-            return true; // conflict! all lits false
-          }
-          else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
+    if (modelStack[indexOfNextLitToPropagate] > 0) {
+        for (uint i = 0; i < neg_lit_apparitions[modelStack[indexOfNextLitToPropagate]].size(); ++i) {
+            bool someLitTrue = false;
+            int numUndefs = 0;
+            int lastLitUndef = 0;
+            for (uint k = 0; not someLitTrue and k < clauses[neg_lit_apparitions[modelStack[indexOfNextLitToPropagate]][i]].size(); ++k) {
+                int val = currentValueInModel(clauses[neg_lit_apparitions[modelStack[indexOfNextLitToPropagate]][i]][k]);
+                if (val == TRUE) someLitTrue = true;
+                else if (val == UNDEF){
+                  ++numUndefs;
+                  lastLitUndef = clauses[neg_lit_apparitions[modelStack[indexOfNextLitToPropagate]][i]][k];
+                }
+            }
+            if (not someLitTrue and numUndefs == 0) {
+                lit_score[modelStack[indexOfNextLitToPropagate]] += 3;
+                return true; // conflict! all lits false
+            }
+            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
+        }
+    }
+    else {
+        for (uint i = 0; i < pos_lit_apparitions[-modelStack[indexOfNextLitToPropagate]].size(); ++i) {
+            bool someLitTrue = false;
+            int numUndefs = 0;
+            int lastLitUndef = 0;
+            for (uint k = 0; not someLitTrue and k < clauses[pos_lit_apparitions[-modelStack[indexOfNextLitToPropagate]][i]].size(); ++k) {
+                int val = currentValueInModel(clauses[pos_lit_apparitions[-modelStack[indexOfNextLitToPropagate]][i]][k]);
+                if (val == TRUE) someLitTrue = true;
+                else if (val == UNDEF){
+                  ++numUndefs;
+                  lastLitUndef = clauses[pos_lit_apparitions[-modelStack[indexOfNextLitToPropagate]][i]][k];
+                }
+            }
+            if (not someLitTrue and numUndefs == 0) {
+                lit_score[-modelStack[indexOfNextLitToPropagate]] += 3;
+                return true; // conflict! all lits false
+            }
+            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
         }
      }
-     else if (modelStack[indexOfNextLitToPropagate] > 0){
-       cout << "Positive literal: " << modelStack[indexOfNextLitToPropagate] << endl;
-         for (uint i = 0; i < neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ].size(); ++i) {
-           cout << "Travelling across apparitions" << endl;
-           bool someLitTrue = false;
-           int numUndefs = 0;
-           int lastLitUndef = 0;
-           for (uint k = 0; not someLitTrue and k < clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]].size(); ++k){
-             cout << "Travelling through a clause" << endl;
-             int val = currentValueInModel(clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]][k]);
-             if (val == TRUE) someLitTrue = true;
-             else if (val == UNDEF){
-                 ++numUndefs;
-                 lastLitUndef = clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]][k]; }
-
-           }
-           if (not someLitTrue and numUndefs == 0) {
-             lit_score[modelStack[indexOfNextLitToPropagate]] += 3;
-             cout << "propagateGivesConflict exited" << endl;
-             return true; // conflict! all lits false
-           }
-           else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
-         }
-     }
+     ++indexOfNextLitToPropagate;
   }
-  cout << "propagateGivesConflict exited" << endl;
   return false;
 }
-
 
 
 

@@ -110,7 +110,7 @@ void backtrack(){
 //en realitat només cal mirar les clàusules a on hi influeix el valor sobre el que hem
 //decidit
 bool propagateGivesConflict() {
-  //cout << "propagateGivesConflict entered" << endl;
+  cout << "propagateGivesConflict entered" << endl;
   /*int i = 0;
   while ( i < modelStack.size() ) {
     cout << modelStack[i] << " " << endl;
@@ -137,14 +137,14 @@ bool propagateGivesConflict() {
       else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
     }*/
     if (modelStack[indexOfNextLitToPropagate] < 0) {
-        //cout << "Negative literal: " << modelStack[indexOfNextLitToPropagate] << endl;
+        cout << "Negative literal: " << modelStack[indexOfNextLitToPropagate] << endl;
         for (uint i = 0; i < pos_lit_apparitions[modelStack[indexOfNextLitToPropagate]].size(); ++i) {
-          //cout << "Travelling across apparitions" << endl;
+          cout << "Travelling across apparitions" << endl;
           bool someLitTrue = false;
           int numUndefs = 0;
           int lastLitUndef = 0;
           for (uint k = 0; not someLitTrue and k < clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]].size(); ++k){
-            //cout << "Travelling through a clause" << endl;
+            cout << "Travelling through a clause" << endl;
             int val = currentValueInModel(clauses[pos_lit_apparitions[modelStack[indexOfNextLitToPropagate] ][i]][k]);
             if (val == TRUE) someLitTrue = true;
             else if (val == UNDEF){
@@ -154,21 +154,21 @@ bool propagateGivesConflict() {
           }
           if (not someLitTrue and numUndefs == 0) {
             lit_score[-modelStack[indexOfNextLitToPropagate]] += 3;
-            //cout << "propagateGivesConflict exited" << endl;
+            cout << "propagateGivesConflict exited" << endl;
             return true; // conflict! all lits false
           }
           else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
         }
      }
      else if (modelStack[indexOfNextLitToPropagate] > 0){
-       //cout << "Positive literal: " << modelStack[indexOfNextLitToPropagate] << endl;
+       cout << "Positive literal: " << modelStack[indexOfNextLitToPropagate] << endl;
          for (uint i = 0; i < neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ].size(); ++i) {
-           //cout << "Travelling across apparitions" << endl;
+           cout << "Travelling across apparitions" << endl;
            bool someLitTrue = false;
            int numUndefs = 0;
            int lastLitUndef = 0;
            for (uint k = 0; not someLitTrue and k < clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]].size(); ++k){
-             //cout << "Travelling through a clause" << endl;
+             cout << "Travelling through a clause" << endl;
              int val = currentValueInModel(clauses[neg_lit_apparitions[-modelStack[indexOfNextLitToPropagate] ][i]][k]);
              if (val == TRUE) someLitTrue = true;
              else if (val == UNDEF){
@@ -178,14 +178,14 @@ bool propagateGivesConflict() {
            }
            if (not someLitTrue and numUndefs == 0) {
              lit_score[modelStack[indexOfNextLitToPropagate]] += 3;
-             //cout << "propagateGivesConflict exited" << endl;
+             cout << "propagateGivesConflict exited" << endl;
              return true; // conflict! all lits false
            }
            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
          }
      }
   }
-  //cout << "propagateGivesConflict exited" << endl;
+  cout << "propagateGivesConflict exited" << endl;
   return false;
 }
 
@@ -269,5 +269,5 @@ int main(){
     ++decisionLevel;
     //Afegim el següent literal sobre el que prendrem la decisió a la pila
     setLiteralToTrue(decisionLit);    // now push decisionLit on top of the mark
-  }
+} //*/
 }

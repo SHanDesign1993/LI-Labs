@@ -57,7 +57,67 @@ hourInRange(Start,End,H):- Start>End, End1 is End+24-1, between(Start,End1,H1), 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 writeClauses:-
-    ...
+    nurseNStartsExactlyOnce,
+    nurseNisOfTypeT,
+    nurseDoesntWorkBlockedHours,
+    nurseNWorksAtHourH,
+    nurseNDoesntWorkAtHourH,
+    atLeastKNursesAtHourH,
+    true.
+
+nurseNStartsExactlyOnce:-
+    nurse(N),
+    findall(startsNH-N-H, hour(H), Lits),
+    exactly(1, Lits),
+    fail.
+nurseNStartsExactlyOnce.
+
+nurseNisOfTypeT:-
+    nurse(N),
+    findall(nurseType-N-Type, type(Type), Lits),
+    exactly(1, Lits),
+    fail.
+nurseNisOfTypeT.
+
+nurseDoesntWorkBlockedHours:-
+    nurseIDandBlocking(N, Start, End),
+    hourInRange(Start, End, H),
+    negate(worksNH-N-H, Lit),
+    writeClause(Lit),
+    fail.
+nurseDoesntWorkBlockedHours.
+
+nurseNWorksAtHourH:-
+    nurse(N),
+    hour(SH),
+    type(T),
+    workingHourForTypeAndStartH(T, SH, H),
+    negate(startsNH-N-SH, Lit1),
+    negate(nurseType-N-T, Lit2),
+    expressOr(Lit, [Lit1, Lit2, worksNH-N-H]),
+    writeClause(Lit), fail
+nurseNWorksAtHourH.
+
+nurseNDoesntWorkAtHourH:-
+    nurse(N),
+    hour(SH),
+    type(T),
+    workingHourForTypeAndStartH(T, SH, H),
+    negate(startsNH-N-SH, Lit1),
+    negate(nurseType-N-T, Lit2),
+    negate(worksNH-N-H, Lit3),
+    expressOr(Lit, [Lit1, Lit2, Lit2]),
+    writeClause(Lit),
+    fail
+nurseNDoesntWorkAtHourH.
+
+atLeastKNursesAtHourH:-
+    hour(H),
+    needed(H, K),
+    findall(worksNH-N-H, nurse(N), Lits),
+    atLeast(K, Lits),
+    fail.
+atLeastKNursesAtHourH.
 
 % =====================================================================
 

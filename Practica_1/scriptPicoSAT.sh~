@@ -20,7 +20,7 @@ do
     echo $f
     echo "picoSAT:"
     start_measuring_time
-    picosat -v $f > salPicoSAT
+    #picosat -v $f > salPicoSAT
     stop_measuring_time
     egrep -o "UNSATISFIABLE|SATISFIABLE" salPicoSAT
     egrep "decisions" salPicoSAT

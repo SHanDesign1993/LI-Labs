@@ -51,6 +51,11 @@ workingHourForTypeAndStartH(1,StartH,H):- between(4,6,I), H is (StartH+I) mod 24
 workingHourForTypeAndStartH(2,StartH,H):- between(0,2,I), H is (StartH+I) mod 24. %Type=2: WWWRRWWW
 workingHourForTypeAndStartH(2,StartH,H):- between(5,7,I), H is (StartH+I) mod 24.
 
+notWorkingHourForTypeAndStartH(1,StartH,H):- I is 3, H is (StartH+I) mod 24. %Type=1: WWWRWWW
+notWorkingHourForTypeAndStartH(1,StartH, H):-between(7, 23, I), H is (StartH+I) mod 24.
+notWorkingHourForTypeAndStartH(2,StartH,H):- between(3, 4, I), H is (StartH+I) mod 24. %Type=2: WWWRRWWW
+notWorkingHourForTypeAndStartH(2,StartH, H):-between(8, 23, I), H is (StartH+I) mod 24.
+
 hourInRange(Start,End,H):- Start<End, End1 is End-1,    between(Start,End1,H).
 hourInRange(Start,End,H):- Start>End, End1 is End+24-1, between(Start,End1,H1), H is H1 mod 24.
 
@@ -94,21 +99,20 @@ nurseNWorksAtHourH:-
     workingHourForTypeAndStartH(T, SH, H),
     negate(startsNH-N-SH, Lit1),
     negate(nurseType-N-T, Lit2),
-    expressOr(Lit, [Lit1, Lit2, worksNH-N-H]),
-    writeClause(Lit), fail
+    writeClause([Lit1, Lit2, worksNH-N-H]),
+    fail.
 nurseNWorksAtHourH.
 
 nurseNDoesntWorkAtHourH:-
     nurse(N),
     hour(SH),
     type(T),
-    workingHourForTypeAndStartH(T, SH, H),
+    notWorkingHourForTypeAndStartH(T, SH, H),
     negate(startsNH-N-SH, Lit1),
     negate(nurseType-N-T, Lit2),
     negate(worksNH-N-H, Lit3),
-    expressOr(Lit, [Lit1, Lit2, Lit2]),
-    writeClause(Lit),
-    fail
+    writeClause([Lit1, Lit2, Lit3]),
+    fail.
 nurseNDoesntWorkAtHourH.
 
 atLeastKNursesAtHourH:-

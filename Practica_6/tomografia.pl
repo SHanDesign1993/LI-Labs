@@ -24,16 +24,16 @@ ejemplo2( [10,4,8,5,6], [5,3,4,0,5,0,5,2,2,0,1,5,1] ).
 ejemplo3( [11,5,4], [3,2,3,1,1,1,1,2,3,2,1] ).
 
 
-p:-	ejemplo1(RowSums,ColSums), print('1'), nl,
-	length(RowSums,NumRows), print('2'), nl,
-	length(ColSums,NumCols),  print('3'), nl,
-	NVars is NumRows*NumCols,  print('4'), nl,
-	listVars(NVars,L),  print('5'), nl,  % generate a list of Prolog vars (their names do not matter)
-	L ins 0..1,  print('6'), nl,
-	matrixByRows(L,NumCols,MatrixByRows),  print('7'), nl,
-	transpose(MatrixByRows, MatrixByCols),  print('8'), nl,
-	declareConstraints(NumRows, MatrixByRows, RowSums),  print('9'), nl,
-	declareConstraints(NumCols, MatrixByCols, ColSums),  print('10'), nl,
+p:-	ejemplo1(RowSums,ColSums),
+	length(RowSums,NumRows),
+	length(ColSums,NumCols),
+	NVars is NumRows*NumCols,
+	listVars(NVars,L),    % generate a list of Prolog vars (their names do not matter)
+	L ins 0..1,
+	matrixByRows(L,NumCols,MatrixByRows),
+	transpose(MatrixByRows, MatrixByCols),
+	declareConstraints(NumRows, MatrixByRows, RowSums),
+	declareConstraints(NumCols, MatrixByCols, ColSums),
 	%labeling(L, MatrixByRows),  print('11'), nl,
 	pretty_print(RowSums,ColSums,MatrixByRows).
 

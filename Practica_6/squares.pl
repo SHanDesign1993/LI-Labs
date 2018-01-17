@@ -34,16 +34,16 @@ writeSide(S):- S<10, write('  '),write(S),!.
 writeSide(S):-       write(' ' ),write(S),!.
 
 insideBigSquare(_, _, [], []).
-insideBigSquare(N, Big, [Y | Sides], [X | Vars]):-
-  fitSmallSquareInBigOne(N, Big, Y, X),
-  insideBigSquare(N, Big, Sides, Vars).
+insideBigSquare(_, Big, [Y | Sides], [X | Vars]):-
+  fitSmallSquareInBigOne(_, Big, Y, X),
+  insideBigSquare(_, Big, Sides, Vars).
 
-fitSmallSquareInBigOne(N, Big, Side, X):-
+fitSmallSquareInBigOne(_, Big, Side, X):-
   Y1 is Big - Side + 1,
   X #>= 1,
   X #=< Y1.
 
-nonoverlapping(N, Sides, RowVars, ColVars):-
+nonoverlapping(_, Sides, RowVars, ColVars):-
   createRectangles(Sides, RowVars, ColVars, L),
   disjoint2(L).
 
